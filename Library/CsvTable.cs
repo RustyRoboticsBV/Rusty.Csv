@@ -88,7 +88,7 @@ namespace Rusty.Csv
             }
             catch (Exception ex)
             {
-                throw new Exception($"CSV: Could not parse file '{name}' due an exception: {ex}.");
+                throw new Exception($"CsvTable: Could not parse file '{name}' due an exception: {ex}.");
             }
         }
 
@@ -131,7 +131,7 @@ namespace Rusty.Csv
         {
             // Check bounds.
             if (column < 0 || row < 0 || column >= Width || row >= Height)
-                throw new ArgumentOutOfRangeException($"The cell ({column}, {row}) is out of bounds!");
+                throw new ArgumentOutOfRangeException($"CsvTable: The cell ({column}, {row}) is out of bounds!");
 
             // Get cell index.
             int index = column + row * Width;
@@ -239,6 +239,14 @@ namespace Rusty.Csv
             File.WriteAllText(filePath, Serialize());
         }
 
+        /// <summary>
+        /// Load a CSV table from a file and return the result.
+        /// </summary>
+        public static CsvTable Load(string filePath)
+        {
+            return new CsvTable(filePath);
+        }
+
         /* Private methods. */
         /// <summary>
         /// Set the contents of this table.
@@ -280,7 +288,7 @@ namespace Rusty.Csv
             }
             catch
             {
-                throw new ArgumentOutOfRangeException($"CSV: could not find column '{name}'!");
+                throw new ArgumentOutOfRangeException($"CsvTable: could not find column '{name}'!");
             }
         }
 
@@ -295,7 +303,7 @@ namespace Rusty.Csv
             }
             catch
             {
-                throw new ArgumentOutOfRangeException($"CSV: could not find row '{name}'!");
+                throw new ArgumentOutOfRangeException($"CsvTable: could not find row '{name}'!");
             }
         }
 
