@@ -1,14 +1,14 @@
 #if GODOT
 using Godot;
 #elif UNITY_5_3_OR_NEWER
-using System;
+using UnityEngine;
 #endif
 
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
-namespace Modules.L1.Importer.Csv
+namespace Rusty.Csv
 {
     /// <summary>
     /// A CSV table.
@@ -66,12 +66,18 @@ namespace Modules.L1.Importer.Csv
         private Dictionary<string, int> ColumnLookup { get; set; } = new Dictionary<string, int>();
 
         /* Constructors. */
+        /// <summary>
+        /// Create a new CSV table from an array of cells and a table width.
+        /// </summary>
         public CsvTable(string name, string[] cells, int width)
         {
             Name = name;
             SetContents(cells, width);
         }
 
+        /// <summary>
+        /// Create a new CSV table from a string of text.
+        /// </summary>
         public CsvTable(string name, string fileText)
         {
             Name = name;
@@ -86,12 +92,15 @@ namespace Modules.L1.Importer.Csv
             }
         }
 
+        /// <summary>
+        /// Create a new CSV table object by loading it from a file.
+        /// </summary>
         public CsvTable(string filePath) : this(Path.GetFileNameWithoutExtension(filePath), File.ReadAllText(filePath)) { }
 
         /* Public methods. */
         /// <summary>
-        /// Convert this table to an easy-to-read textual format. This format shouldn't be saved to a file, use the Serialize
-        /// method for this instead!
+        /// Convert this table to an easy-to-read textual format. This is NOT the same as the file format, use the Serialize
+        /// method for that instead!
         /// </summary>
         public override string ToString()
         {
