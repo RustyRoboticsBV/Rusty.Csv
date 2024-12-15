@@ -88,14 +88,14 @@ namespace Rusty.Csv
             }
             catch (Exception ex)
             {
-                throw new Exception($"CsvTable: Could not parse file '{name}' due an exception: {ex}.");
+                throw new Exception($"CsvTable: Could not parse file '{name}' due an exception: {ex.Message}");
             }
         }
 
         /// <summary>
         /// Create a new CSV table object by loading it from a file.
         /// </summary>
-        public CsvTable(string filePath) : this(Path.GetFileNameWithoutExtension(filePath), File.ReadAllText(filePath)) { }
+        public CsvTable(string filePath) : this(Path.GetFileNameWithoutExtension(filePath), ReadFile(filePath)) { }
 
         /* Public methods. */
         /// <summary>
@@ -130,8 +130,10 @@ namespace Rusty.Csv
         public string GetCell(int column, int row)
         {
             // Check bounds.
-            if (column < 0 || row < 0 || column >= Width || row >= Height)
-                throw new ArgumentOutOfRangeException($"CsvTable: The cell ({column}, {row}) is out of bounds!");
+            if (column < 0 || column >= Width)
+                throw new ArgumentOutOfRangeException(nameof(column), $"CsvTable: The cell ({column}, {row}) is out of bounds!");
+            if (row < 0 || row >= Height)
+                throw new ArgumentOutOfRangeException(nameof(row), $"CsvTable: The cell ({column}, {row}) is out of bounds!");
 
             // Get cell index.
             int index = column + row * Width;
@@ -288,7 +290,7 @@ namespace Rusty.Csv
             }
             catch
             {
-                throw new ArgumentOutOfRangeException($"CsvTable: could not find column '{name}'!");
+                throw new ArgumentOutOfRangeException(nameof(name), $"CsvTable: could not find column '{name}'!");
             }
         }
 
@@ -303,7 +305,7 @@ namespace Rusty.Csv
             }
             catch
             {
-                throw new ArgumentOutOfRangeException($"CsvTable: could not find row '{name}'!");
+                throw new ArgumentOutOfRangeException(nameof(name), $"CsvTable: could not find row '{name}'!");
             }
         }
 
@@ -440,6 +442,57 @@ namespace Rusty.Csv
             // Write to output.
             tableCells = results;
             tableWidth = width;
+        }
+
+        /// <summary>
+        /// Read a file as text.
+        /// </summary>
+        private static string ReadFile(string filePath)
+        {
+            try
+            {
+                return File.ReadAllText(filePath);
+            }
+            catch (ArgumentNullException ex)
+            {
+                throw new ArgumentNullException($"CsvTable: {ex.Message}");
+            }
+            catch (ArgumentException ex)
+            {
+                throw new ArgumentException($"CsvTable: {ex.Message}");
+            }
+            catch (PathTooLongException ex)
+            {
+                throw new PathTooLongException($"CsvTable: {ex.Message}");
+            }
+            catch (DirectoryNotFoundException ex)
+            {
+                throw new DirectoryNotFoundException($"CsvTable: {ex.Message}");
+            }
+            catch (FileNotFoundException ex)
+            {
+                throw new FileNotFoundException($"CsvTable: {ex.Message}");
+            }
+            catch (IOException ex)
+            {
+                throw new IOException($"CsvTable: {ex.Message}");
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                throw new UnauthorizedAccessException($"CsvTable: {ex.Message}");
+            }
+            catch (NotSupportedException ex)
+            {
+                throw new NotSupportedException($"CsvTable: {ex.Message}");
+            }
+            catch (System.Security.SecurityException ex)
+            {
+                throw new System.Security.SecurityException($"CsvTable: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"CsvTable: {ex.Message}");
+            }
         }
     }
 }

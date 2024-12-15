@@ -1,6 +1,7 @@
 ﻿#if GODOT
 using Godot;
 using Godot.Collections;
+using System;
 
 namespace Rusty.Csv
 {
@@ -15,8 +16,17 @@ namespace Rusty.Csv
         /// </summary>
         public ResourceT Import(string filePath, Dictionary importOptions = null)
         {
-            CsvTable table = CsvTable.Load(filePath);
-            return Convert(table, importOptions);
+            try
+            {
+                filePath = ProjectSettings.GlobalizePath(filePath);
+                CsvTable table = CsvTable.Load(filePath);
+                return Convert(table, importOptions);
+            }
+            catch (Exception ex)
+            {
+                GD.Print(ex.Message);
+                return null;
+            }
         }
 
         /// <summary>
