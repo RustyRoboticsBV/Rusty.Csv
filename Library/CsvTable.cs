@@ -31,6 +31,48 @@ namespace Rusty.Csv
         private int width;
 #endif
 
+        /* Indexers. */
+        /// <summary>
+        /// Access the contents of a cell, using its row-wise index.
+        /// </summary>
+        public string this[int index]
+        {
+            get => GetCell(index);
+            set => SetCell(index, value);
+        }
+        /// <summary>
+        /// Access the contents of a cell, using its row and column index.
+        /// </summary>
+        public string this[int column, int row]
+        {
+            get => GetCell(column, row);
+            set => SetCell(column, row, value);
+        }
+        /// <summary>
+        /// Access the contents of a cell, using its row index and column name.
+        /// </summary>
+        public string this[int column, string row]
+        {
+            get => GetCell(column, row);
+            set => SetCell(column, row, value);
+        }
+        /// <summary>
+        /// Access the contents of a cell, using its row name and column index.
+        /// </summary>
+        public string this[string column, int row]
+        {
+            get => GetCell(column, row);
+            set => SetCell(column, row, value);
+        }
+        /// <summary>
+        /// Access the contents of a cell, using its row and column name.
+        /// </summary>
+        public string this[string column, string row]
+        {
+            get => GetCell(column, row);
+            set => SetCell(column, row, value);
+        }
+
         /* Public properties. */
         /// <summary>
         /// The title of the CSV table.
@@ -60,12 +102,35 @@ namespace Rusty.Csv
         /// The height of the CSV table.
         /// </summary>
         public int Height => (int)Mathf.Ceil(Cells.Length / (float)Width);
+        /// <summary>
+        /// The number of cells in the table.
+        /// </summary>
+        public int Count => cells.Length;
 
         /* Private properties. */
         private Dictionary<string, int> RowLookup { get; set; } = new Dictionary<string, int>();
         private Dictionary<string, int> ColumnLookup { get; set; } = new Dictionary<string, int>();
 
         /* Constructors. */
+        /// <summary>
+        /// Create a new CSV table with empty cells.
+        /// </summary>
+        public CsvTable(string name, int width, int height) : this(name, width, height, "") { }
+
+        /// <summary>
+        /// Create a new CSV table, with all cells set to some value.
+        /// </summary>
+        public CsvTable(string name, int width, int height, string value)
+        {
+            Name = name;
+            cells = new string[width * height];
+            for (int i = 0; i < cells.Length; i++)
+            {
+                cells[i] = value;
+            }
+            this.width = width;
+        }
+
         /// <summary>
         /// Create a new CSV table from an array of cells and a table width.
         /// </summary>
@@ -88,7 +153,7 @@ namespace Rusty.Csv
             }
             catch (Exception ex)
             {
-                throw new Exception($"CsvTable: Could not parse file '{name}' due an exception: {ex.Message}");
+                throw new Exception($"CSVTable: Could not parse file '{name}' due an exception: {ex.Message}");
             }
         }
 
@@ -125,15 +190,28 @@ namespace Rusty.Csv
         }
 
         /// <summary>
+        /// Get the contents of a cell, using its row-wise cell index.
+        /// </summary>
+        public string GetCell(int index)
+        {
+            // Check bounds.
+            if (index < 0 || index >= Count)
+                throw new ArgumentOutOfRangeException(nameof(index), $"CSVTable: The cell with index '{index.ToString()}' is out of bounds!");
+
+            // Get cell.
+            return Cells[index];
+        }
+
+        /// <summary>
         /// Get the contents of a cell, using its row and column index.
         /// </summary>
         public string GetCell(int column, int row)
         {
             // Check bounds.
             if (column < 0 || column >= Width)
-                throw new ArgumentOutOfRangeException(nameof(column), $"CsvTable: The cell ({column}, {row}) is out of bounds!");
+                throw new ArgumentOutOfRangeException(nameof(column), $"CSVTable: The cell ({column}, {row}) is out of bounds!");
             if (row < 0 || row >= Height)
-                throw new ArgumentOutOfRangeException(nameof(row), $"CsvTable: The cell ({column}, {row}) is out of bounds!");
+                throw new ArgumentOutOfRangeException(nameof(row), $"CSVTable: The cell ({column}, {row}) is out of bounds!");
 
             // Get cell index.
             int index = column + row * Width;
@@ -164,6 +242,61 @@ namespace Rusty.Csv
         public string GetCell(string column, string row)
         {
             return GetCell(FindColumn(column), FindRow(row));
+        }
+
+        /// <summary>
+        /// Get the contents of a cell, using its row-wise index.
+        /// </summary>
+        public void SetCell(int index, string value)
+        {
+            // Check bounds.
+            if (index < 0 || index >= Count)
+                throw new ArgumentOutOfRangeException(nameof(index), $"CSVTable: The cell with index '{index}' is out of bounds!");
+
+            // Get cell.
+            Cells[index] = value;
+        }
+
+        /// <summary>
+        /// Get the contents of a cell, using its row and column index.
+        /// </summary>
+        public void SetCell(int column, int row, string value)
+        {
+            // Check bounds.
+            if (column < 0 || column >= Width)
+                throw new ArgumentOutOfRangeException(nameof(column), $"CSVTable: The cell ({column}, {row}) is out of bounds!");
+            if (row < 0 || row >= Height)
+                throw new ArgumentOutOfRangeException(nameof(row), $"CSVTable: The cell ({column}, {row}) is out of bounds!");
+
+            // Get cell index.
+            int index = column + row * Width;
+
+            // Set cell.
+            SetCell(index, value);
+        }
+
+        /// <summary>
+        /// Get the contents of a cell, using its row name and column index.
+        /// </summary>
+        public void SetCell(int column, string row, string value)
+        {
+            SetCell(column, FindRow(row), value);
+        }
+
+        /// <summary>
+        /// Get the contents of a cell, using its row index and column name.
+        /// </summary>
+        public void SetCell(string column, int row, string value)
+        {
+            SetCell(FindColumn(column), row, value);
+        }
+
+        /// <summary>
+        /// Get the contents of a cell, using its row and column name.
+        /// </summary>
+        public void SetCell(string column, string row, string value)
+        {
+            SetCell(FindColumn(column), FindRow(row), value);
         }
 
         /// <summary>
@@ -284,14 +417,10 @@ namespace Rusty.Csv
         /// </summary>
         private int FindColumn(string name)
         {
-            try
-            {
-                return ColumnLookup[name];
-            }
-            catch
-            {
-                throw new ArgumentOutOfRangeException(nameof(name), $"CsvTable: could not find column '{name}'!");
-            }
+            if (!ColumnLookup.ContainsKey(name))
+                throw new ArgumentOutOfRangeException(nameof(name), $"CSVTable: Could not find column '{name}'!");
+
+            return ColumnLookup[name];
         }
 
         /// <summary>
@@ -299,14 +428,10 @@ namespace Rusty.Csv
         /// </summary>
         private int FindRow(string name)
         {
-            try
-            {
-                return RowLookup[name];
-            }
-            catch
-            {
-                throw new ArgumentOutOfRangeException(nameof(name), $"CsvTable: could not find row '{name}'!");
-            }
+            if (!RowLookup.ContainsKey(name))
+                throw new ArgumentOutOfRangeException(nameof(name), $"CSVTable: Could not find row '{name}'!");
+
+            return RowLookup[name];
         }
 
         /// <summary>
@@ -449,50 +574,7 @@ namespace Rusty.Csv
         /// </summary>
         private static string ReadFile(string filePath)
         {
-            try
-            {
-                return File.ReadAllText(filePath);
-            }
-            catch (ArgumentNullException ex)
-            {
-                throw new ArgumentNullException($"CsvTable: {ex.Message}");
-            }
-            catch (ArgumentException ex)
-            {
-                throw new ArgumentException($"CsvTable: {ex.Message}");
-            }
-            catch (PathTooLongException ex)
-            {
-                throw new PathTooLongException($"CsvTable: {ex.Message}");
-            }
-            catch (DirectoryNotFoundException ex)
-            {
-                throw new DirectoryNotFoundException($"CsvTable: {ex.Message}");
-            }
-            catch (FileNotFoundException ex)
-            {
-                throw new FileNotFoundException($"CsvTable: {ex.Message}");
-            }
-            catch (IOException ex)
-            {
-                throw new IOException($"CsvTable: {ex.Message}");
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                throw new UnauthorizedAccessException($"CsvTable: {ex.Message}");
-            }
-            catch (NotSupportedException ex)
-            {
-                throw new NotSupportedException($"CsvTable: {ex.Message}");
-            }
-            catch (System.Security.SecurityException ex)
-            {
-                throw new System.Security.SecurityException($"CsvTable: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"CsvTable: {ex.Message}");
-            }
+            return File.ReadAllText(filePath);
         }
     }
 }
